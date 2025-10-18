@@ -113,7 +113,22 @@ print(f"System status: {status}")
 
 ### Terminal Console
 
-VEILos4 includes a modern, React-based terminal console:
+VEILos4 includes a modern, React-based terminal console with **dual-mode functionality**:
+
+**VEILos4 Mode**: Execute quantum-cognitive commands
+- Quantum operations (create, observe, list states)
+- Agent management (register, list agents)
+- Capability system (grant, verify permissions)
+- Plugin system (load, unload plugins)
+
+**Linux Shell Mode**: Execute standard Linux commands
+- File operations (ls, cat, grep, find, mkdir, rm, cp, mv)
+- Navigation (cd, pwd)
+- Process management (ps, top, kill)
+- Development tools (git, python, node, npm)
+- Environment control (export variables)
+
+The terminal automatically detects command type and routes appropriately. All commands are capability-controlled and fully audited.
 
 ```bash
 # Start the backend API server
@@ -126,7 +141,9 @@ npm install
 npm run dev
 ```
 
-Access the terminal at `http://localhost:5173`. See [surface/terminal/README.md](surface/terminal/README.md) for detailed documentation.
+Access the terminal at `http://localhost:5173`. See [surface/terminal/README.md](surface/terminal/README.md) and [surface/terminal/DUAL_TERMINAL_GUIDE.md](surface/terminal/DUAL_TERMINAL_GUIDE.md) for detailed documentation.
+
+**AI Model Accessibility**: The dual terminal is fully accessible to AI models via REST API, enabling them to execute both VEILos4 and Linux commands programmatically.
 
 ## Core Principles
 

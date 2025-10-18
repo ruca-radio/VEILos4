@@ -3,11 +3,16 @@ VEIL4 Terminal Backend
 
 Python backend integration for the VEILos4 Terminal Console.
 Provides API endpoints for terminal commands and VEIL4 system interaction.
+Supports dual mode: VEILos commands and Linux shell emulation.
 """
 
 from typing import Dict, Any, Optional, List
 import json
+import subprocess
+import os
+import shlex
 from datetime import datetime
+from pathlib import Path
 
 from core.veil4_system import VEIL4
 from core.parity.unified_interface import AgentType
@@ -30,6 +35,9 @@ class TerminalBackend:
         self.veil4 = veil4 or VEIL4()
         self.terminal_sessions: Dict[str, Dict[str, Any]] = {}
         self.command_history: List[Dict[str, Any]] = []
+        
+        # Linux shell state for each session
+        self.shell_states: Dict[str, Dict[str, Any]] = {}
         
     def start(self):
         """Start the terminal backend and VEIL4 system"""
@@ -76,11 +84,20 @@ class TerminalBackend:
         
         self.terminal_sessions[session_id]["agent_id"] = agent_id
         
+        # Initialize shell state for this session
+        self.shell_states[session_id] = {
+            "cwd": str(Path.home()),  # Start in home directory
+            "env": dict(os.environ),  # Copy current environment
+            "shell": "bash"  # Default shell
+        }
+        
         return {
             "session_id": session_id,
             "agent_id": agent_id,
             "status": "active",
-            "veil4_running": self.veil4.running
+            "veil4_running": self.veil4.running,
+            "shell_enabled": True,
+            "cwd": self.shell_states[session_id]["cwd"]
         }
     
     def execute_command(
@@ -126,6 +143,7 @@ class TerminalBackend:
         args = parts[1:]
         
         try:
+            # Check if it's a VEILos4 command or Linux command
             if cmd == "quantum":
                 output = self._handle_quantum_command(agent_id, args)
             elif cmd == "capability":
@@ -138,19 +156,29 @@ class TerminalBackend:
                 output = self._get_system_status()
             elif cmd == "help":
                 output = self._get_help_text()
+            elif cmd == "linux":
+                # Explicit linux command prefix
+                linux_cmd = " ".join(args)
+                output = self._execute_linux_command(session_id, agent_id, linux_cmd)
+            elif cmd == "shell":
+                # Shell mode toggle or explicit shell command
+                output = self._handle_shell_command(session_id, args)
             else:
-                output = f"Unknown command: {cmd}"
+                # Try to execute as Linux command if it looks like one
+                output = self._try_linux_or_veil_command(session_id, agent_id, command)
             
             return {
                 "success": True,
                 "output": output,
-                "timestamp": datetime.now().isoformat()
+                "timestamp": datetime.now().isoformat(),
+                "cwd": self.shell_states.get(session_id, {}).get("cwd", "")
             }
         except Exception as e:
             return {
                 "success": False,
                 "error": str(e),
-                "output": f"Error executing command: {e}"
+                "output": f"Error executing command: {e}",
+                "cwd": self.shell_states.get(session_id, {}).get("cwd", "")
             }
     
     def _handle_quantum_command(self, agent_id: str, args: List[str]) -> str:
@@ -319,6 +347,182 @@ class TerminalBackend:
         else:
             return f"Unknown plugin subcommand: {subcommand}"
     
+    def _execute_linux_command(
+        self, 
+        session_id: str, 
+        agent_id: str, 
+        command: str
+    ) -> str:
+        """
+        Execute a Linux shell command.
+        
+        Args:
+            session_id: Session identifier
+            agent_id: Agent executing the command
+            command: Linux command to execute
+            
+        Returns:
+            Command output or error message
+        """
+        # Security check - verify agent has execute capability
+        agent = self.veil4.parity.agents.get(agent_id)
+        if not agent or "execute" not in agent.capabilities:
+            return "✗ Permission denied: 'execute' capability required for shell commands"
+        
+        # Get shell state
+        shell_state = self.shell_states.get(session_id)
+        if not shell_state:
+            return "✗ Session shell state not initialized"
+        
+        # Handle built-in commands that modify state
+        if command.startswith("cd "):
+            return self._handle_cd_command(session_id, command)
+        elif command == "pwd":
+            return shell_state["cwd"]
+        elif command.startswith("export "):
+            return self._handle_export_command(session_id, command)
+        
+        # Security: block dangerous commands for non-sudo users
+        if "admin" not in agent.capabilities:
+            dangerous_cmds = ["rm -rf /", "mkfs", "dd if=", ":(){ :|:& };:", "chmod -R 777 /"]
+            for danger in dangerous_cmds:
+                if danger in command:
+                    return f"✗ Security: Command blocked (requires sudo/admin capability)"
+        
+        try:
+            # Execute command in the session's working directory
+            result = subprocess.run(
+                command,
+                shell=True,
+                cwd=shell_state["cwd"],
+                env=shell_state["env"],
+                capture_output=True,
+                text=True,
+                timeout=30,  # 30 second timeout
+                executable="/bin/bash"
+            )
+            
+            # Combine stdout and stderr
+            output = ""
+            if result.stdout:
+                output += result.stdout
+            if result.stderr:
+                if output:
+                    output += "\n"
+                output += f"stderr: {result.stderr}"
+            
+            if result.returncode != 0 and not output:
+                output = f"Command exited with code {result.returncode}"
+            
+            return output if output else "Command completed successfully"
+            
+        except subprocess.TimeoutExpired:
+            return "✗ Command timed out (30s limit)"
+        except Exception as e:
+            return f"✗ Error executing command: {e}"
+    
+    def _handle_cd_command(self, session_id: str, command: str) -> str:
+        """Handle cd (change directory) command"""
+        shell_state = self.shell_states[session_id]
+        parts = command.split(maxsplit=1)
+        
+        if len(parts) == 1:
+            # cd with no args goes to home
+            target = str(Path.home())
+        else:
+            target = parts[1].strip()
+        
+        # Resolve path relative to current directory
+        if not target.startswith("/"):
+            target = os.path.join(shell_state["cwd"], target)
+        
+        # Normalize path
+        target = os.path.normpath(target)
+        
+        # Check if directory exists
+        if os.path.isdir(target):
+            shell_state["cwd"] = target
+            return f"Changed directory to: {target}"
+        else:
+            return f"✗ cd: {target}: No such directory"
+    
+    def _handle_export_command(self, session_id: str, command: str) -> str:
+        """Handle export (environment variable) command"""
+        shell_state = self.shell_states[session_id]
+        parts = command.split(maxsplit=1)
+        
+        if len(parts) < 2:
+            return "✗ Usage: export VAR=value"
+        
+        assignment = parts[1]
+        if "=" in assignment:
+            var, value = assignment.split("=", 1)
+            shell_state["env"][var] = value
+            return f"✓ Exported: {var}={value}"
+        else:
+            return "✗ Invalid export syntax. Use: export VAR=value"
+    
+    def _handle_shell_command(self, session_id: str, args: List[str]) -> str:
+        """Handle shell-related commands"""
+        if not args:
+            shell_state = self.shell_states.get(session_id, {})
+            return f"""
+Shell Status:
+  Shell:        {shell_state.get('shell', 'bash')}
+  Working Dir:  {shell_state.get('cwd', 'unknown')}
+  
+Usage:
+  shell info    - Show shell information
+  shell env     - Show environment variables
+"""
+        
+        subcommand = args[0].lower()
+        shell_state = self.shell_states.get(session_id, {})
+        
+        if subcommand == "info":
+            return f"""
+Shell Information:
+  Shell:        {shell_state.get('shell', 'bash')}
+  Working Dir:  {shell_state.get('cwd', 'unknown')}
+  Env Vars:     {len(shell_state.get('env', {}))} defined
+"""
+        elif subcommand == "env":
+            env = shell_state.get("env", {})
+            env_lines = [f"  {k}={v}" for k, v in sorted(env.items())]
+            return "Environment Variables:\n" + "\n".join(env_lines[:50])  # Limit to 50 vars
+        else:
+            return f"✗ Unknown shell subcommand: {subcommand}"
+    
+    def _try_linux_or_veil_command(
+        self, 
+        session_id: str, 
+        agent_id: str, 
+        command: str
+    ) -> str:
+        """
+        Try to determine if command is Linux or VEILos4, and execute appropriately.
+        
+        Common Linux commands will be executed as shell commands.
+        Unknown commands will show an error.
+        """
+        cmd = command.strip().split()[0].lower()
+        
+        # List of common Linux commands to auto-detect
+        common_linux_commands = {
+            "ls", "cat", "echo", "grep", "find", "ps", "top", "df", "du",
+            "mkdir", "touch", "rm", "cp", "mv", "chmod", "chown", 
+            "pwd", "cd", "export", "env", "which", "man", "tail", "head",
+            "wc", "sort", "uniq", "diff", "wget", "curl", "ping", "ssh",
+            "tar", "gzip", "unzip", "git", "python", "node", "npm", "pip"
+        }
+        
+        if cmd in common_linux_commands:
+            # Execute as Linux command
+            return self._execute_linux_command(session_id, agent_id, command)
+        else:
+            # Unknown command
+            return f"Unknown command: {cmd}\nTry 'help' for VEILos4 commands or 'linux <cmd>' for shell commands."
+    
     def _get_system_status(self) -> str:
         """Get comprehensive system status"""
         status = self.veil4.get_system_status()
@@ -370,10 +574,25 @@ Plugin Commands:
   plugin load <name>            - Load a plugin
   plugin unload <name>          - Unload a plugin
 
+Shell Commands:
+  linux <command>               - Execute Linux shell command
+  shell info                    - Show shell information
+  shell env                     - Show environment variables
+  cd <directory>                - Change directory
+  pwd                           - Print working directory
+  export VAR=value              - Set environment variable
+
+Common Linux Commands (auto-detected):
+  ls, cat, grep, find, ps, df, mkdir, touch, rm, cp, mv,
+  git, python, node, npm, pip, and many more...
+
 System Commands:
   status                        - Show system status
   help                          - Show this help message
 
+════════════════════════════════════════════════════════════
+Note: Common Linux commands are auto-detected and executed.
+      For explicit shell execution, use: linux <command>
 ════════════════════════════════════════════════════════════"""
     
     def get_session_info(self, session_id: str) -> Optional[Dict[str, Any]]:
@@ -384,6 +603,9 @@ System Commands:
         """Close a terminal session"""
         if session_id in self.terminal_sessions:
             self.terminal_sessions[session_id]["state"] = "closed"
+            # Cleanup shell state
+            if session_id in self.shell_states:
+                del self.shell_states[session_id]
             return True
         return False
     

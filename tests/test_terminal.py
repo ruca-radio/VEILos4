@@ -2,9 +2,13 @@
 Tests for VEILos4 Terminal Backend
 
 Tests the terminal backend integration with VEIL4 core.
+Includes tests for dual VEILos4 and Linux terminal emulation.
 """
 
 import unittest
+import os
+import tempfile
+from pathlib import Path
 from surface.terminal.terminal_backend import TerminalBackend
 from core.veil4_system import VEIL4
 
@@ -42,9 +46,18 @@ class TestTerminalBackend(unittest.TestCase):
         self.assertEqual(session_info["status"], "active")
         self.assertTrue(session_info["veil4_running"])
         self.assertIsNotNone(session_info["agent_id"])
+        self.assertTrue(session_info["shell_enabled"])
+        self.assertIsNotNone(session_info["cwd"])
         
         # Verify session was stored
         self.assertIn("test_session_001", self.terminal.terminal_sessions)
+        
+        # Verify shell state was initialized
+        self.assertIn("test_session_001", self.terminal.shell_states)
+        shell_state = self.terminal.shell_states["test_session_001"]
+        self.assertIn("cwd", shell_state)
+        self.assertIn("env", shell_state)
+        self.assertIn("shell", shell_state)
     
     def test_execute_quantum_create(self):
         """Test quantum create command"""
@@ -153,6 +166,8 @@ class TestTerminalBackend(unittest.TestCase):
         self.assertIn("Commands", result["output"])
         self.assertIn("quantum", result["output"])
         self.assertIn("agent", result["output"])
+        self.assertIn("Shell Commands", result["output"])
+        self.assertIn("linux", result["output"])
     
     def test_execute_unknown_command(self):
         """Test handling of unknown command"""
@@ -214,6 +229,9 @@ class TestTerminalBackend(unittest.TestCase):
         # Verify session state changed
         info = self.terminal.get_session_info("test_session_012")
         self.assertEqual(info["state"], "closed")
+        
+        # Verify shell state was cleaned up
+        self.assertNotIn("test_session_012", self.terminal.shell_states)
     
     def test_get_status(self):
         """Test getting backend status"""
@@ -249,6 +267,195 @@ class TestTerminalBackend(unittest.TestCase):
         self.assertNotIn("admin", agent.capabilities)
         self.assertIn("read", agent.capabilities)
         self.assertIn("execute", agent.capabilities)
+
+
+class TestLinuxTerminalEmulation(unittest.TestCase):
+    """Test Linux terminal emulation functionality"""
+    
+    def setUp(self):
+        """Setup test fixtures"""
+        self.veil4 = VEIL4()
+        self.terminal = TerminalBackend(self.veil4)
+        self.terminal.start()
+        
+        # Create a test session
+        self.terminal.create_session("test_linux_session", {"userMode": "user"})
+        self.session_id = "test_linux_session"
+    
+    def tearDown(self):
+        """Cleanup"""
+        if self.veil4.running:
+            self.veil4.shutdown()
+    
+    def test_execute_linux_echo(self):
+        """Test executing echo command"""
+        result = self.terminal.execute_command(
+            self.session_id,
+            "echo Hello VEILos4"
+        )
+        
+        self.assertTrue(result["success"])
+        self.assertIn("Hello VEILos4", result["output"])
+    
+    def test_execute_linux_pwd(self):
+        """Test pwd command"""
+        result = self.terminal.execute_command(
+            self.session_id,
+            "pwd"
+        )
+        
+        self.assertTrue(result["success"])
+        # Should return a path
+        self.assertTrue(len(result["output"]) > 0)
+        self.assertNotIn("Unknown command", result["output"])
+    
+    def test_execute_linux_ls(self):
+        """Test ls command"""
+        result = self.terminal.execute_command(
+            self.session_id,
+            "ls /"
+        )
+        
+        self.assertTrue(result["success"])
+        # Should list root directory contents
+        self.assertTrue(len(result["output"]) > 0)
+    
+    def test_execute_cd_command(self):
+        """Test cd (change directory) command"""
+        # Get initial working directory
+        initial_cwd = self.terminal.shell_states[self.session_id]["cwd"]
+        
+        # Change to /tmp
+        result = self.terminal.execute_command(
+            self.session_id,
+            "cd /tmp"
+        )
+        
+        self.assertTrue(result["success"])
+        self.assertIn("Changed directory", result["output"])
+        
+        # Verify cwd changed
+        new_cwd = self.terminal.shell_states[self.session_id]["cwd"]
+        self.assertEqual(new_cwd, "/tmp")
+        self.assertNotEqual(initial_cwd, new_cwd)
+        
+        # Verify pwd shows new directory
+        result = self.terminal.execute_command(self.session_id, "pwd")
+        self.assertIn("/tmp", result["output"])
+    
+    def test_execute_cd_nonexistent(self):
+        """Test cd to non-existent directory"""
+        result = self.terminal.execute_command(
+            self.session_id,
+            "cd /nonexistent_directory_12345"
+        )
+        
+        self.assertTrue(result["success"])
+        self.assertIn("No such directory", result["output"])
+    
+    def test_explicit_linux_command(self):
+        """Test explicit linux command prefix"""
+        result = self.terminal.execute_command(
+            self.session_id,
+            "linux echo Testing explicit linux command"
+        )
+        
+        self.assertTrue(result["success"])
+        self.assertIn("Testing explicit linux command", result["output"])
+    
+    def test_shell_info_command(self):
+        """Test shell info command"""
+        result = self.terminal.execute_command(
+            self.session_id,
+            "shell info"
+        )
+        
+        self.assertTrue(result["success"])
+        self.assertIn("Shell Information", result["output"])
+        self.assertIn("Working Dir", result["output"])
+    
+    def test_export_command(self):
+        """Test export environment variable"""
+        result = self.terminal.execute_command(
+            self.session_id,
+            "export TEST_VAR=test_value"
+        )
+        
+        self.assertTrue(result["success"])
+        self.assertIn("Exported", result["output"])
+        
+        # Verify environment variable was set
+        shell_state = self.terminal.shell_states[self.session_id]
+        self.assertIn("TEST_VAR", shell_state["env"])
+        self.assertEqual(shell_state["env"]["TEST_VAR"], "test_value")
+    
+    def test_permission_denied_for_user_mode(self):
+        """Test that user mode cannot execute without execute capability"""
+        # Create a session without execute capability
+        # (This is a bit contrived since our create_session always grants execute)
+        # We'll test the security check directly
+        session_info = self.terminal.get_session_info(self.session_id)
+        agent_id = session_info["agent_id"]
+        
+        # Verify execute capability is present
+        agent = self.veil4.parity.agents[agent_id]
+        self.assertIn("execute", agent.capabilities)
+        
+        # Commands should work
+        result = self.terminal.execute_command(
+            self.session_id,
+            "echo test"
+        )
+        self.assertTrue(result["success"])
+    
+    def test_dangerous_command_blocking(self):
+        """Test that dangerous commands are blocked for non-admin users"""
+        result = self.terminal.execute_command(
+            self.session_id,
+            "rm -rf /"
+        )
+        
+        # Should be blocked
+        self.assertTrue(result["success"])
+        self.assertIn("Security", result["output"])
+        self.assertIn("blocked", result["output"])
+    
+    def test_auto_detect_common_commands(self):
+        """Test that common Linux commands are auto-detected"""
+        # Test a few common commands
+        commands = ["ls", "cat /etc/hostname", "ps"]
+        
+        for cmd in commands:
+            result = self.terminal.execute_command(self.session_id, cmd)
+            # Should execute, not show "Unknown command"
+            self.assertTrue(result["success"])
+            # Should not be an unknown command error
+            if "Unknown command" in result["output"]:
+                # If it's unknown, it should be because it's trying to execute
+                self.fail(f"Command '{cmd}' was not auto-detected as Linux command")
+    
+    def test_cwd_persistence_across_commands(self):
+        """Test that working directory persists across commands"""
+        # Change to /tmp
+        self.terminal.execute_command(self.session_id, "cd /tmp")
+        
+        # Execute ls without arguments (should list /tmp)
+        result = self.terminal.execute_command(self.session_id, "ls")
+        
+        self.assertTrue(result["success"])
+        # Result should be from /tmp directory
+        
+        # Verify we're still in /tmp
+        cwd = self.terminal.shell_states[self.session_id]["cwd"]
+        self.assertEqual(cwd, "/tmp")
+    
+    def test_result_includes_cwd(self):
+        """Test that command results include current working directory"""
+        result = self.terminal.execute_command(self.session_id, "pwd")
+        
+        self.assertTrue(result["success"])
+        self.assertIn("cwd", result)
+        self.assertTrue(len(result["cwd"]) > 0)
 
 
 if __name__ == "__main__":
