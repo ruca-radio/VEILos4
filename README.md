@@ -111,6 +111,23 @@ status = veil4.get_system_status()
 print(f"System status: {status}")
 ```
 
+### Terminal Console
+
+VEILos4 includes a modern, React-based terminal console:
+
+```bash
+# Start the backend API server
+pip install flask flask-cors
+python surface/terminal/api_server.py
+
+# In another terminal, start the frontend
+cd surface/terminal
+npm install
+npm run dev
+```
+
+Access the terminal at `http://localhost:5173`. See [surface/terminal/README.md](surface/terminal/README.md) for detailed documentation.
+
 ## Core Principles
 
 ### 1. Quantum Substrate
@@ -166,6 +183,11 @@ VEILos4/
 │   │   └── immutable_log.py    # Immutable state log
 │   └── veil4_system.py     # Main VEIL4 system
 ├── surface/                 # Surface layer adapters
+│   └── terminal/           # Terminal console interface
+│       ├── VeilosTerminalConsole.tsx  # React terminal component
+│       ├── terminal_backend.py        # Python backend integration
+│       ├── api_server.py              # Flask REST API server
+│       └── README.md                  # Terminal documentation
 ├── cognitive/               # Cognitive layer adapters
 ├── plugins/                 # Extension plugins
 ├── tests/                   # Test suites
