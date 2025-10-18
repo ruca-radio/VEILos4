@@ -1,0 +1,8 @@
+task_id: drift_report
+description: Create drift delta report
+input_keys:
+  - quantum.drift
+output_keys:
+  - memory.driftsummary
+command:
+  - echo "Detected drift=${quantum.drift} at depth=${loop_depth}" → memory.log

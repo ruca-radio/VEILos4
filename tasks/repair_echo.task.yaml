@@ -1,0 +1,12 @@
+task_id: repair_echo
+description: Execute repair sequence for echo parity issues
+input_keys:
+  - quantum.drift
+  - quantum.fidelity
+output_keys:
+  - action
+command:
+  - load module agent_harmonizer.py
+  - set action: "repair_in_progress"
+priority: critical
+timeout: 30

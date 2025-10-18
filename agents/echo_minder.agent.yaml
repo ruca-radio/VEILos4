@@ -1,0 +1,6 @@
+agent_id: echo_minder
+trigger: drift > 0.05
+action: run_module
+target: agent_harmonizer.py
+persistence: recursive
+max_cycles: 5
