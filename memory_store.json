@@ -1,5 +1,12 @@
 {
   "goal": "Awaiting injection",
-  "quantum": {},
-  "action": null
+  "quantum": {
+    "drift": 0.0441,
+    "fidelity": 0.9772,
+    "coherence": 0.8721,
+    "timestamp": 1760823192.4535465,
+    "observer": "quantum_observer"
+  },
+  "action": "STABLE",
+  "loop_depth": 0
 }
