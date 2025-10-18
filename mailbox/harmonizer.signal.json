@@ -1,0 +1,9 @@
+{
+  "from": "quantum_supervisor",
+  "event": "drift_event",
+  "payload": {
+    "drift": 0.056,
+    "timestamp": 1760822800.0,
+    "priority": "high"
+  }
+}
