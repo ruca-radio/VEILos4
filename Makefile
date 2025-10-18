@@ -28,6 +28,7 @@ CFLAGS += -ffunction-sections -fdata-sections
 # Linker flags
 LDFLAGS = -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16
 LDFLAGS += -Wl,--gc-sections
+LDFLAGS += -T linker.ld
 LDFLAGS += -nostartfiles
 
 # Source files
