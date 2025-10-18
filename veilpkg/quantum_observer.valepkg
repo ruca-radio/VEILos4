@@ -1,0 +1,8 @@
+package: quantum_observer
+version: 0.1
+entrypoint: quantum_observer.py
+description: Simulates quantum drift + echo metrics.
+tags:
+  - entropy
+  - diagnostics
+  - observer
