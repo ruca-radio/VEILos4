@@ -6,3 +6,7 @@
 # For enhanced features (optional)
 # numpy>=1.21.0  # For quantum-inspired numerical operations
 # cryptography>=3.4.8  # For enhanced cryptographic operations
+
+# Terminal Backend API Server (optional)
+# flask>=2.3.0  # Web framework for terminal API
+# flask-cors>=4.0.0  # CORS support for frontend integration
