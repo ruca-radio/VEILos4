@@ -1,0 +1,8 @@
+# VEIL4 Requirements
+# Python 3.8+
+
+# Core dependencies (minimal - VEIL4 uses mostly stdlib)
+
+# For enhanced features (optional)
+# numpy>=1.21.0  # For quantum-inspired numerical operations
+# cryptography>=3.4.8  # For enhanced cryptographic operations
