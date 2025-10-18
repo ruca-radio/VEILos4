@@ -278,11 +278,94 @@ def list_plugins():
         }), 500
 
 
+@app.route('/api/veil4/linux', methods=['POST'])
+def execute_linux_command():
+    """Execute a Linux shell command"""
+    try:
+        data = request.get_json()
+        command = data.get('command', '')
+        session_id = data.get('sessionId')
+        
+        if not session_id:
+            return jsonify({
+                "success": False,
+                "error": "Session ID required"
+            }), 400
+        
+        if not command:
+            return jsonify({
+                "success": False,
+                "error": "Command required"
+            }), 400
+        
+        # Get session info
+        session = terminal.get_session_info(session_id)
+        if not session:
+            return jsonify({
+                "success": False,
+                "error": "Session not found"
+            }), 404
+        
+        agent_id = session['agent_id']
+        
+        # Execute Linux command
+        output = terminal._execute_linux_command(session_id, agent_id, command)
+        
+        return jsonify({
+            "success": True,
+            "output": output,
+            "cwd": terminal.shell_states.get(session_id, {}).get("cwd", "")
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e),
+            "output": f"Error: {e}"
+        }), 500
+
+
+@app.route('/api/veil4/shell/info', methods=['GET'])
+def get_shell_info():
+    """Get shell information for a session"""
+    try:
+        session_id = request.args.get('sessionId')
+        
+        if not session_id:
+            return jsonify({
+                "success": False,
+                "error": "Session ID required"
+            }), 400
+        
+        shell_state = terminal.shell_states.get(session_id)
+        
+        if not shell_state:
+            return jsonify({
+                "success": False,
+                "error": "Session not found"
+            }), 404
+        
+        return jsonify({
+            "success": True,
+            "shell": shell_state.get("shell", "bash"),
+            "cwd": shell_state.get("cwd", ""),
+            "env_count": len(shell_state.get("env", {}))
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+
 if __name__ == '__main__':
     print("=" * 60)
     print("VEILos4 Terminal API Server")
     print("=" * 60)
     print(f"VEIL4 System: {'Running' if veil4.running else 'Stopped'}")
+    print("Features:")
+    print("  ✓ VEILos4 Commands (quantum, agent, capability, plugin)")
+    print("  ✓ Linux Shell Emulation (bash commands)")
+    print("  ✓ Dual-mode Terminal (AI model accessible)")
     print(f"Server starting on http://localhost:5000")
     print("=" * 60)
     

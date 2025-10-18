@@ -1,6 +1,29 @@
 # VEILos4 Terminal Console
 
-A modern, React-based terminal console for the VEIL4 Quantum-Cognitive Operating System. Designed to be virtualized and run by frontier LLMs.
+A modern, React-based **dual-mode terminal console** for the VEIL4 Quantum-Cognitive Operating System. Designed to be virtualized and run by frontier LLMs.
+
+## Dual Terminal Modes
+
+The terminal operates in **two integrated modes**:
+
+### 1. VEILos4 Mode
+Execute quantum-cognitive system commands:
+- **Quantum Operations**: Create and observe quantum superpositions
+- **Agent Management**: Register and manage human/AI agents
+- **Capability System**: Fine-grained permission control
+- **Plugin System**: Load and manage extensibility plugins
+- **System Status**: Monitor VEILos4 system state
+
+### 2. Linux Shell Mode
+Execute standard Linux shell commands:
+- **File Operations**: ls, cat, grep, find, mkdir, touch, rm, cp, mv
+- **Navigation**: cd, pwd (with state persistence)
+- **Process Management**: ps, top, kill
+- **System Information**: df, du, free, uname
+- **Development Tools**: git, python, node, npm, pip
+- **Environment**: export variables, shell configuration
+
+**Automatic Command Detection**: The terminal automatically detects whether a command is VEILos4 or Linux and routes it appropriately. Use `linux <cmd>` for explicit shell execution.
 
 ## Features
 
@@ -32,40 +55,87 @@ A modern, React-based terminal console for the VEIL4 Quantum-Cognitive Operating
 
 ### Supported Commands
 
-#### Quantum Commands
+#### VEILos4 Commands (Quantum-Cognitive Operations)
 ```bash
 quantum create <id>      # Create quantum superposition
 quantum observe <id>     # Collapse quantum state
 quantum list             # List active states
 ```
 
-#### Capability Commands
 ```bash
 capability grant <agent> <resource> <perms>  # Grant capabilities
 capability verify <token>                     # Verify capability token
 ```
 
-#### Agent Commands
 ```bash
 agent register <id> <type>   # Register agent (HUMAN/MODEL)
 agent list                    # List all agents
 agent info <id>               # Show agent details
 ```
 
-#### Plugin Commands
 ```bash
 plugin list              # List loaded plugins
 plugin load <name>       # Load a plugin
 plugin unload <name>     # Unload a plugin
 ```
 
-#### System Commands
 ```bash
 status                   # Show system status
 help                     # Display help
+```
+
+#### Linux Shell Commands (Auto-Detected)
+```bash
+# File operations
+ls [-la] [path]          # List directory contents
+cat <file>               # Display file contents
+grep <pattern> <file>    # Search for pattern
+find <path> -name <pattern>  # Find files
+mkdir <dir>              # Create directory
+touch <file>             # Create empty file
+rm <file>                # Remove file
+cp <src> <dst>           # Copy file
+mv <src> <dst>           # Move/rename file
+
+# Navigation
+cd <directory>           # Change directory (state persists!)
+pwd                      # Print working directory
+
+# Process management
+ps [aux]                 # List processes
+top                      # Display process monitor
+kill <pid>               # Terminate process
+
+# System information
+df [-h]                  # Disk space usage
+du [-sh] <path>          # Directory size
+free [-h]                # Memory usage
+uname [-a]               # System information
+
+# Development tools
+git <command>            # Git version control
+python <script>          # Run Python script
+node <script>            # Run Node.js script
+npm <command>            # Node package manager
+pip <command>            # Python package manager
+
+# Environment
+export VAR=value         # Set environment variable (persists in session!)
+echo $VAR                # Display variable value
+
+# Shell control
+shell info               # Show shell information
+shell env                # List environment variables
+```
+
+#### Explicit Linux Commands
+```bash
+linux <command>          # Force execution as Linux shell command
+```
+
+#### Terminal Control
+```bash
 clear                    # Clear terminal
-echo <message>           # Echo message
-veil4 <command>          # Execute VEIL4 backend command
 ```
 
 ## Installation
@@ -230,13 +300,88 @@ The production build will be in the `dist/` directory.
 
 ## Features for Frontier LLMs
 
-- **Quantum Operations**: Create and manipulate quantum superpositions
+The dual-mode terminal provides comprehensive functionality for AI models:
+
+### VEILos4 Operations
+- **Quantum Operations**: Create and manipulate quantum superpositions for decision-making
 - **Agent Management**: Register and manage multiple agents (human or model)
 - **Capability System**: Fine-grained permission management
 - **Plugin System**: Extensible architecture via plugins
 - **Audit Trail**: Complete transparency of all operations
-- **Session Isolation**: Each terminal session is isolated
+
+### Linux Shell Access
+- **File System Access**: Read, write, navigate the file system
+- **Process Control**: Monitor and manage system processes
+- **System Information**: Query system resources and status
+- **Development Tools**: Execute scripts, run commands, use version control
+- **Environment Control**: Set variables, configure shell state
+
+### Integration Features
+- **Session Isolation**: Each terminal session is isolated with its own state
+- **State Persistence**: Working directory and environment variables persist across commands
+- **Security Controls**: Capability-based access control prevents unauthorized operations
+- **Automatic Routing**: Commands are automatically routed to appropriate handler
 - **Real-time Feedback**: Immediate command execution results
+- **Comprehensive API**: All functionality available via REST endpoints
+
+### AI Model Usage Patterns
+
+#### Pattern 1: Information Gathering
+```bash
+# Register as AI agent
+agent register claude_instance MODEL
+
+# Explore file system
+ls /data
+cat /data/config.json
+
+# Check system resources
+df -h
+free -h
+
+# View status
+status
+```
+
+#### Pattern 2: Quantum Decision Making
+```bash
+# Create quantum state for decision
+quantum create decision_001
+
+# Analyze options (AI model processing)
+# ...
+
+# Observe and get result
+quantum observe decision_001
+```
+
+#### Pattern 3: Development Workflow
+```bash
+# Navigate to project
+cd /home/project
+
+# Check version control
+git status
+git log --oneline -5
+
+# Run tests
+python -m pytest tests/
+
+# Create quantum state for result analysis
+quantum create test_results
+```
+
+#### Pattern 4: Mixed Operations
+```bash
+# Combine VEILos4 and Linux operations
+agent register ai_processor MODEL
+cd /data/processing
+ls *.json
+capability grant ai_processor /data/processing read,write
+quantum create processing_state
+python process_data.py
+quantum observe processing_state
+```
 
 ## Design Philosophy
 
