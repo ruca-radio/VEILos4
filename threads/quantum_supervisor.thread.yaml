@@ -1,0 +1,6 @@
+name: quantum_supervisor
+priority: 2
+sequence:
+  - load module quantum_observer.py
+  - load module agent_harmonizer.py
+  - load module loop_manager.py

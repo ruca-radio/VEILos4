@@ -1,0 +1,17 @@
+{
+  "timestamp": "2025-10-18T21:30:03.383365",
+  "goal": "Awaiting injection",
+  "quantum": {
+    "drift": 0.0749,
+    "fidelity": 0.9557,
+    "coherence": 0.8558,
+    "timestamp": 1760822747.5523236,
+    "observer": "quantum_observer"
+  },
+  "action": "RECURSIVE_CORRECTION",
+  "stack_hint": 4,
+  "metadata": {
+    "captured_by": "introspector",
+    "system_time": 1760823003.383374
+  }
+}

@@ -1,0 +1,5 @@
+name: system_monitor
+priority: 1
+sequence:
+  - status
+  - show memory
