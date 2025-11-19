@@ -1,0 +1,12 @@
+{
+  "goal": "Awaiting injection",
+  "quantum": {
+    "drift": 0.0575,
+    "fidelity": 0.9875,
+    "coherence": 0.8911,
+    "timestamp": 1760823312.5606267,
+    "observer": "quantum_observer"
+  },
+  "action": "RECURSIVE_CORRECTION",
+  "loop_depth": 4
+}

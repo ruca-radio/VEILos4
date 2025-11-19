@@ -1,0 +1,6 @@
+agent_id: entropy_cleanser
+trigger: quantum.coherence < 0.90
+action: run_module
+target: quantum_observer.py
+persistence: single
+priority: high

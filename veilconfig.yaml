@@ -1,0 +1,17 @@
+boot_modules:
+  - quantum_observer.py
+  - loop_manager.py
+
+persistent_daemons:
+  - valed.py
+
+constraints:
+  max_depth: 6
+  task_polling_interval: 3
+  entropy_threshold: 0.05
+  coherence_minimum: 0.90
+
+runtime:
+  enable_auto_correction: true
+  log_all_transitions: true
+  memory_persistence: true

@@ -44,3 +44,15 @@ htmlcov/
 # VEIL4 specific
 *.log
 .veil4_state/
+
+# VEILos specific (runtime artifacts)
+logs/*.log
+tmp/*
+!tmp/.gitkeep
+stackframes/*.json
+futures/*.json
+mailbox/*.json
+!mailbox/.gitkeep
+!stackframes/.gitkeep
+!futures/.gitkeep
+*.backup

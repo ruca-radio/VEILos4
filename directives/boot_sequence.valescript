@@ -1,0 +1,11 @@
+VEILOS_MODE: true
+CURRENT_USER: Architect
+commands:
+  - inject_goal: "Harmonize RSI drift"
+  - load module quantum_observer.py
+  - load module agent_harmonizer.py
+  - show memory
+evaluation:
+  if: quantum.drift > 0.05
+  then: "Deploy harmonizer_agent"
+  else: "System stable"

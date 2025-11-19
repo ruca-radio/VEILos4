@@ -1,0 +1,17 @@
+{
+  "timestamp": 1760823010.9874163,
+  "current_state": {
+    "drift": 0.0749,
+    "fidelity": 0.9557,
+    "coherence": 0.8558,
+    "depth": 4
+  },
+  "future_action": "spawn harmonizer",
+  "future_loop_depth": 5,
+  "risk": "moderate",
+  "recommendation": "Engage correction sequence",
+  "predicted_drift": 0.08239,
+  "confidence": 0.75,
+  "coherence_warning": true,
+  "future_coherence": 0.85
+}
