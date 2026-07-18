@@ -1,0 +1,11 @@
+# VEILos Runtime Configuration
+boot_modules:
+  - quantum_observer.py
+  - loop_manager.py
+
+persistent_daemons:
+  - valed.py
+
+constraints:
+  max_depth: 6
+  task_polling_interval: 3

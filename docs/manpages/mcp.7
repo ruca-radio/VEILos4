@@ -1,0 +1,27 @@
+.TH MCP 7 "July 2025" "VeilOS 0.6" "VeilOS Miscellaneous Information"
+.SH NAME
+mcp \- The VeilOS Model Context Protocol
+.SH DESCRIPTION
+The Model Context Protocol (MCP) is a simple, read-only HTTP interface that allows VeilOS to serve its live internal state to other AI models or external applications. This protocol is the key to enabling VeilOS to act as a "conductor" for a swarm of other specialized AI agents.
+.P
+By exposing its World State Model (WSM) as a JSON object, VeilOS can provide rich, real-time context to other models, allowing them to perform tasks with a greater understanding of the user's goals and the system's current state.
+.SH USAGE
+The MCP server is started automatically on boot and runs on a predefined local port.
+.TP
+.B Endpoint
+.BR /context
+.TP
+.B Method
+.BR GET
+.TP
+.B Response
+A JSON object representing the complete, live World State Model.
+.SH EXAMPLE
+An external script or AI agent can make an HTTP GET request to \fBhttp://localhost:8686/context\fP to retrieve the current state of VeilOS.
+.P
+.I curl http://localhost:8686/context
+.SH SECURITY
+The MCP server is bound to localhost by default and is read-only, providing a secure way to share state without exposing control of the OS.
+.SH SEE ALSO
+.BR veil (1),
+.BR wsm (7)

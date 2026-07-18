@@ -1,11 +1,18 @@
 {
+  "version": "2.0",
+  "session_id": "cec25daf-add1-4c61-b581-9101d4ee4a40",
+  "created": "2025-07-06T04:36:09.611904",
+  "last_updated": "2025-07-06T04:36:09.611909",
   "goal": "Awaiting injection",
   "quantum": {
-    "drift": 0.0738,
-    "fidelity": 0.9923,
-    "coherence": 0.9627,
-    "timestamp": 1771997035.9691513,
-    "observer": "quantum_observer"
+    "drift": 0.0,
+    "fidelity": 1.0,
+    "coherence": 1.0
   },
-  "action": "stable"
+  "action": null,
+  "loop_depth": 0,
+  "history": [],
+  "api_cache": {},
+  "checkpoints": [],
+  "loaded_modules": []
 }

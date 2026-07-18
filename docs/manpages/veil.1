@@ -1,0 +1,28 @@
+.TH VEIL 1 "July 2025" "VeilOS 0.6" "VeilOS User Manuals"
+.SH NAME
+veil \- the interactive shell for the VeilOS AI-native operating system
+.SH SYNOPSIS
+.B veil
+.SH DESCRIPTION
+The \fBveil\fP program is the primary user interface for VeilOS. Unlike traditional shells, it does not interpret commands based on a rigid parser. Instead, it accepts natural language input, which is processed through a cognitive loop to determine user intent.
+.P
+The shell's primary function is to act as a conversational partner, allowing the user to direct the operating system by stating high-level goals rather than specific, technical commands.
+.SH INTERACTION MODEL
+Interaction with \fBveil\fP is based on a continuous dialogue.
+.TP
+.B 1. User Input
+The user provides a prompt in plain English.
+.TP
+.B 2. Logic Chain
+The system analyzes the input and presents a "Logic Chain," which is a brief summary of the interpreted intent and the plan it has formed to address it. This provides transparency and allows the user to understand the system's reasoning before it acts.
+.TP
+.B 3. Execution
+The system executes the plan, which may involve running background tasks, interacting with the filesystem, or making further AI queries.
+.TP
+.B 4. Response
+The system provides a final response in natural language, confirming the completion of the task.
+.SH EXITING
+To exit the shell, type \fBexit\fP or press Ctrl+C.
+.SH SEE ALSO
+.BR wsm (7),
+.BR mcp (7)

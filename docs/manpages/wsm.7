@@ -1,0 +1,23 @@
+.TH WSM 7 "July 2025" "VeilOS 0.6" "VeilOS Miscellaneous Information"
+.SH NAME
+wsm \- The VeilOS World State Model
+.SH DESCRIPTION
+The World State Model (WSM) is the central nervous system of VeilOS. It is a structured, in-memory JSON object that represents the OS's live, real-time understanding of itself, the user, and its environment.
+.P
+The WSM is not a static configuration file. It is a dynamic model that is constantly updated by various daemons and system processes. The core kernel consults the WSM before making any decision, allowing for highly context-aware behavior.
+.SH STRUCTURE
+The WSM is organized into three primary sections:
+.TP
+.B user
+Contains information about the current user, including their name, inferred emotional state (sentiment), long-term goals, and preferences (e.g., verbosity).
+.TP
+.B system
+Contains information about the OS itself, including its version, current task, resource usage, and core operational directives.
+.TP
+.B environment
+Contains data from the outside world, such as the current time, weather data ingested from APIs, or news headlines.
+.SH USAGE
+The WSM is primarily used internally by the OS. However, its state can be inspected for diagnostic purposes or served to external models via the Model Context Protocol (MCP).
+.SH SEE ALSO
+.BR veil (1),
+.BR mcp (7)

@@ -1,0 +1,67 @@
+services:
+  veilos:
+    build: .
+    container_name: veilos-server
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - veil-data:/app/data
+      - veil-security:/app/security
+    environment:
+      - VEIL_ENV=production
+    networks:
+      - veil-external
+      - veil-internal
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import requests; requests.get('http://127.0.0.1:8000/api/stats').raise_for_status()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  cover-traffic:
+    build: .
+    container_name: veilos-cover
+    restart: unless-stopped
+    entrypoint: ["python3", "cover_traffic.py"]
+    healthcheck:
+      test: ["CMD", "python3", "-c", "print('ok')"]
+      interval: 60s
+      timeout: 3s
+      retries: 3
+    environment:
+      - VEIL_ENV=production
+    networks:
+      - veil-external
+    depends_on:
+      veilos:
+        condition: service_healthy
+
+  consciousness:
+    build: .
+    container_name: veilos-consciousness
+    restart: unless-stopped
+    entrypoint: ["python3", "consciousness_worker.py"]
+    healthcheck:
+      test: ["CMD", "python3", "-c", "print('ok')"]
+      interval: 60s
+      timeout: 3s
+      retries: 3
+    volumes:
+      - veil-data:/app/data
+      - veil-security:/app/security
+    networks:
+      - veil-internal
+
+volumes:
+  veil-data:
+    driver: local
+  veil-security:
+    driver: local
+
+networks:
+  veil-external:
+    driver: bridge
+  veil-internal:
+    driver: bridge
+    internal: true

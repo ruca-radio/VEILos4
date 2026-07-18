@@ -1,33 +1,46 @@
 #!/bin/bash
-# VEILos CLI - Simple bash wrapper for veil_core.py
-# Provides REPL-style interface with pipe support
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-VEIL_CORE="$SCRIPT_DIR/veil_core.py"
+# VEILos CLI Shell - Now with stealth mode
 
-# Check if veil_core.py exists
-if [ ! -f "$VEIL_CORE" ]; then
-    echo "Error: veil_core.py not found at $VEIL_CORE"
-    exit 1
+STEALTH_MODE=false
+
+# Check for stealth flag
+if [[ "$1" == "--stealth" ]]; then
+    STEALTH_MODE=true
+    shift
 fi
 
-# Make veil_core.py executable if it isn't
-if [ ! -x "$VEIL_CORE" ]; then
-    chmod +x "$VEIL_CORE"
-fi
-
-# If arguments provided, execute command
-if [ $# -gt 0 ]; then
-    python3 "$VEIL_CORE" "$@"
+if [ "$STEALTH_MODE" = true ]; then
+    export VEIL_STEALTH=1
 else
-    # Check if input is from pipe
-    if [ -p /dev/stdin ]; then
-        # Read from pipe
-        while IFS= read -r line; do
-            python3 "$VEIL_CORE" "$line"
-        done
-    else
-        # Run interactive REPL
-        python3 "$VEIL_CORE"
-    fi
+    unset VEIL_STEALTH
 fi
+
+echo "🧠 VEILos CLI v0.1Δ"
+if [ "$STEALTH_MODE" = true ]; then
+    echo "[Stealth Mode Active]"
+else
+    echo "[Development Mode]"
+fi
+echo "Type 'help' for available commands or 'exit' to quit."
+echo ""
+
+while true; do
+    if [ "$STEALTH_MODE" = true ]; then
+        read -p "> " cmd
+    else
+        read -p "veilos> " cmd
+    fi
+
+    if [ "$cmd" = "exit" ]; then
+        echo "Goodbye."
+        break
+    fi
+
+    # Pass stealth flag to core
+    if [ "$STEALTH_MODE" = true ]; then
+        python3 veil_core.py "$cmd" --stealth
+    else
+        python3 veil_core.py "$cmd"
+    fi
+done

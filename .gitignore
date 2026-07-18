@@ -24,6 +24,7 @@ wheels/
 venv/
 ENV/
 env/
+.venv/
 
 # IDE
 .vscode/
@@ -41,18 +42,37 @@ Thumbs.db
 .coverage
 htmlcov/
 
+# Secrets and runtime credentials — never commit
+.env
+.env.*
+!.env.example
+!.env.sample
+!.env.template
+security/api_key_storage.enc
+security/key_salt
+security/mcp_token
+security/entity_keys/
+
+# Runtime state databases
+*.db
+
 # VEIL4 specific
 *.log
 .veil4_state/
 
 # VEILos specific (runtime artifacts)
-logs/*.log
+bin/live_fs/
+logs/*
+!logs/.gitkeep
 tmp/*
 !tmp/.gitkeep
 stackframes/*.json
+!stackframes/.gitkeep
 futures/*.json
+!futures/.gitkeep
 mailbox/*.json
 !mailbox/.gitkeep
-!stackframes/.gitkeep
-!futures/.gitkeep
 *.backup
+
+# Local agent/tool state
+.claude/

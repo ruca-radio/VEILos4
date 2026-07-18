@@ -1,0 +1,7 @@
+provider: ollama_local
+endpoint: http://localhost:11434
+api_key_ref: none
+parameters:
+  max_tokens: 1000
+  temperature: 0.7
+  model: llama2

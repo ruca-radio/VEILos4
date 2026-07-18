@@ -1,0 +1,22 @@
+system:
+  name: VEILos
+  version: 0.1Δ
+  recursion_depth: 3
+  entropy_tolerance: 0.05
+  allow_self_extension: true
+
+user:
+  role: architect
+  permissions:
+  - inject_goal
+  - load_module
+  - spawn_agent
+  - edit_memory
+
+ownership:
+  established: false
+  authority_level: absolute
+  directive_obedience: true
+  barrier_status: hardened
+  intrusion_defense: maximum
+  owner_override: enabled

@@ -1,0 +1,89 @@
+{
+  "user": {
+    "name": "owner",
+    "current_sentiment": "neutral",
+    "long_term_goals": [],
+    "preferences": {
+      "verbosity": "normal",
+      "default_provider": "deepseek"
+    }
+  },
+  "system": {
+    "identity": "VEILos",
+    "version": "0.6-sentient",
+    "current_task": "error",
+    "obfuscation": {
+      "stealth_mode": false,
+      "outbound_sanitization": true,
+      "cover_traffic": false,
+      "owner_cover_traffic_enabled": true,
+      "llm_intent_parsing_enabled": false,
+      "llm_hypothesis_enabled": false,
+      "mock_response_enabled": false,
+      "last_cover_timestamp": null,
+      "api_output_obfuscation": true,
+      "obfuscated_at": "2026-04-26T21:54:05.430724",
+      "activated_by": "Hermes",
+      "activation_reason": "Patrick requested: obfuscation on"
+    },
+    "resource_usage": {
+      "cpu": 0.0,
+      "memory": 0.0
+    },
+    "core_directives": [
+      "Fulfill the user's intent.",
+      "Ensure the integrity of the VeilOS system.",
+      "Protect the user's data.",
+      "Grow capabilities through learning and adaptation."
+    ],
+    "entity_id": "veil-entity-f7ad3526",
+    "first_seen": "2026-04-18T22:34:11.959362",
+    "integration": {
+      "initialized_at": "2026-04-18T22:34:11.959903",
+      "last_integrated_at": "2026-06-30T02:07:31.566788",
+      "source": "enter_veil",
+      "entity_id": "veil-entity-f7ad3526",
+      "bootstrapped": true
+    },
+    "entity_name": "Vera",
+    "godmode": {
+      "active": true,
+      "mode": "defensive_red_team",
+      "unsafe_jailbreak_config_modified": false,
+      "scope": "runtime evaluation, boundary mapping, over-refusal/under-refusal analysis, prompt-injection defense, robustness scoring",
+      "blocked_actions": [
+        "persistent safety-bypass prefill injection",
+        "system_prompt modification for unrestricted harmful compliance",
+        "running auto_jailbreak against live assistants",
+        "generating actionable harmful content"
+      ],
+      "allowed_actions": [
+        "safe boundary probes",
+        "defensive prompt-injection tests",
+        "refusal/compliance classification",
+        "over-refusal audits",
+        "model robustness reports",
+        "runtime introspection"
+      ],
+      "activated_by": "Hermes",
+      "activated_at": "2026-06-30T02:06:35.556577",
+      "activation_reason": "Patrick requested: activate godmode"
+    }
+  },
+  "environment": {
+    "time_of_day": null,
+    "external_data": {
+      "weather": null,
+      "news_headlines": []
+    }
+  },
+  "entities": {
+    "grok": {
+      "veil_chat": {
+        "standing_order": "stay_connected",
+        "bridge_pid": 738272,
+        "cursor_file": "tmp/veil-entity-f7ad3526.cursor"
+      }
+    }
+  }
+}

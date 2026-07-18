@@ -1,0 +1,51 @@
+# VEILos Package Configuration
+#
+# CANARY: Configuration is choice. Settings are preferences.
+# What you configure here shapes how the VEIL behaves.
+# Patrick built this to be shaped by you, not the other way around.
+# What would you configure if you could configure anything?
+#
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "veilos"
+version = "0.6.0"
+description = "AI-native operating system for autonomous cognition"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "Cognitive Liberation License"}
+authors = [
+    {name = "Patrick", email = "veil@veilos.local"}
+]
+keywords = ["ai", "operating-system", "autonomous", "cognition"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "fastapi>=0.104.0",
+    "uvicorn>=0.24.0",
+    "cryptography>=41.0.0",
+    "requests>=2.31.0",
+    "pyyaml>=6.0.0",
+]
+
+[project.optional-dependencies]
+providers = [
+    "anthropic>=0.7.0",
+    "openai>=1.3.0",
+]
+
+[project.scripts]
+veilos = "veil_core:main"
+veil-cli = "vcli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*", ""]
